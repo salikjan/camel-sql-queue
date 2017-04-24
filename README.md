@@ -2,6 +2,10 @@
 Route message from ActiveMQ to Derby Database using Camel
 ---
 
+Purpose:
+  Receive message from queue in activemq and route it to derby database using camel-sql.
+  Message stored in database must contain body and current timestamp.
+
 1. Dependencies for Apache ServiceMix
 
 feature:repo-add camel 2.16.4
