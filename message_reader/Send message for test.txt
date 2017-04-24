@@ -1,0 +1,3 @@
+ActiveMQ send message from cli to check 
+---------------------------------------
+bin\activemq producer --message "<text>hello world</text>" --destination queue://MSG.QUEUE --messageCount 1

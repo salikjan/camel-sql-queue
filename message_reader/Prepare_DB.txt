@@ -1,0 +1,28 @@
+# Start Derby Network Server
+
+Apache Derby Network server
+---------------------------
+cd c:\java
+setNetworkServer.bat
+set "DERBY_OPTS=-Duser.language=en -Dderby.drda.debug=true" 
+"%DERBY_HOME%\bin\startNetworkServer.bat"
+
+# Configure Default schema and access credentials
+
+Derby DB check
+--------------
+java -jar "%DERBY_HOME%\lib\derbyrun.jar" ij
+connect 'jdbc:derby://localhost:1527/testdb;create=true;user=admin;password=admin';
+call SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.connection.requireAuthentication','true');
+call SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.authentication.provider','BUILTIN');
+call SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.user.admin', 'admin'); 
+call SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.database.fullAccessusers', 'admin');
+
+# Create table for messages to be stored
+# Execute it in ij
+
+CREATE TABLE messages
+(
+    message VARCHAR (100),
+    createdAt TIMESTAMP NOT NULL
+);

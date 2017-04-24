@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:activemq="http://activemq.apache.org/schema/core"
+	   xmlns:camel="http://camel.apache.org/schema/spring"
+	   xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xsi:schemaLocation="http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+  	   http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring-2.16.4.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+       
+		<context:component-scan base-package="ru.sydev.message_reader"/>
+		
+		<!-- JDBC Derby data source -->
+		<bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		  <property name="driverClassName" value="org.apache.derby.jdbc.ClientDriver"/>
+		  <property name="url" value="jdbc:derby://127.0.0.1:1527/testdb;create=true"/>
+		  <property name="username" value="admin"/>
+		  <property name="password" value="admin"/>
+		</bean>
+ 		
+		<bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
+  			<property name="dataSource" ref="myDataSource"/>
+		</bean>
+
+
+		<bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory" init-method="start" destroy-method="stop">
+	        <property name="maxConnections" value="10" />
+	        <property name="maximumActiveSessionPerConnection" value="10" />
+	
+	        <property name="connectionFactory" >
+	            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+	                <property name="brokerURL" value="tcp://127.0.0.1:61616" />
+	            </bean>
+	        </property>
+    	</bean>
+    		 
+		<bean id="jmsConfig" 
+		   class="org.apache.camel.component.jms.JmsConfiguration">
+		   <property name="connectionFactory" ref="pooledConnectionFactory"/>
+		   <property name="concurrentConsumers" value="10"/>
+		</bean>
+
+		<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+ 			<package>ru.sydev.message_reader</package>
+ 			<route>
+				<from uri="activemq:queue:MSG.QUEUE"/>
+				<to uri="sql:insert into messages(message, createdAt) values(:#${body},:#${date:now:yyyy-MM-dd HH:mm:ss})"/>
+			</route>
+ 		</camelContext>
+</beans>
